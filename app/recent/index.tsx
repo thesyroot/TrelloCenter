@@ -1,38 +1,33 @@
-// app/recent/index.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-type RecentCard = {
-  id: string;
-  title: string;
-  listName: string;
-  labels: string[];
-  createdAt: string; // display
-};
+import { loadRecentCards, RecentCard } from "../../src/lib/recentCardsStorage";
 
 export default function RecentScreen() {
   const router = useRouter();
+  const [items, setItems] = useState<RecentCard[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const items = useMemo<RecentCard[]>(
-    () =>
-      Array.from({ length: 10 }).map((_, i) => ({
-        id: String(i + 1),
-        title: `Mock card #${i + 1} — “Algo para Trello”`,
-        listName: i % 2 === 0 ? "Inbox" : "Doing",
-        labels: i % 3 === 0 ? ["Urgent", "UTN"] : ["Idea"],
-        createdAt: "Today 17:32",
-      })),
-    []
-  );
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    const data = await loadRecentCards();
+    setItems(data);
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    // cada vez que volvés a esta pantalla, refrescá
+    refresh();
+  }, [refresh]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -48,43 +43,57 @@ export default function RecentScreen() {
                 pressed && styles.pressed,
               ]}
             >
-              <Ionicons name="settings-outline" size={22} color="white" />
+              <Ionicons name="settings-outline" size={22} />
             </Pressable>
           ),
         }}
       />
 
       <View style={styles.container}>
-        <FlatList
-          data={items}
-          keyExtractor={(it) => it.id}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.sep} />}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={styles.cardTop}>
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                <Text style={styles.cardMeta}>{item.createdAt}</Text>
-              </View>
-
-              <View style={styles.badgeRow}>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{item.listName}</Text>
+        {items.length === 0 ? (
+          <View style={styles.emptyBox}>
+            <Ionicons name="albums-outline" size={26} color="#aab0bf" />
+            <Text style={styles.emptyTitle}>It’s empty</Text>
+            <Text style={styles.emptyText}>
+              Create your first card using the + button.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={(it) => it.id}
+            contentContainerStyle={styles.listContent}
+            ItemSeparatorComponent={() => <View style={styles.sep} />}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+            }
+            renderItem={({ item }) => (
+              <View style={styles.card}>
+                <View style={styles.cardTop}>
+                  <Text style={styles.cardTitle} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.cardMeta}>
+                    {new Date(item.createdAtISO).toLocaleString()}
+                  </Text>
                 </View>
 
-                {item.labels.slice(0, 3).map((l) => (
-                  <View key={l} style={[styles.badge, styles.badgeSecondary]}>
-                    <Text style={styles.badgeText}>{l}</Text>
+                <View style={styles.badgeRow}>
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{item.listName}</Text>
                   </View>
-                ))}
-              </View>
-            </View>
-          )}
-        />
 
-        {/* Floating Action Button */}
+                  {item.labels.slice(0, 3).map((l) => (
+                    <View key={l} style={[styles.badge, styles.badgeSecondary]}>
+                      <Text style={styles.badgeText}>{l}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          />
+        )}
+
         <Pressable
           onPress={() => router.push("/capture")}
           style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
@@ -142,4 +151,16 @@ const styles = StyleSheet.create({
 
   headerIconBtn: { paddingHorizontal: 10, paddingVertical: 6 },
   pressed: { opacity: 0.65 },
+  emptyBox: {
+    marginTop: 24,
+    backgroundColor: "#121624",
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#1c2335",
+    alignItems: "center",
+    gap: 8,
+  },
+  emptyTitle: { color: "#e9ecf5", fontSize: 16, fontWeight: "700" },
+  emptyText: { color: "#8e95a8", textAlign: "center" },
 });

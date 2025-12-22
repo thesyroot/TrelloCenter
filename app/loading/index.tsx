@@ -1,12 +1,21 @@
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { addRecentCard } from "../../src/lib/recentCardsStorage";
 
 export default function LoadingScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const t = setTimeout(async () => {
+      await addRecentCard({
+        id: String(Date.now()),
+        title: "Mock created card (replace with Trello title)",
+        listName: "Inbox",
+        labels: ["Idea"],
+        createdAtISO: new Date().toISOString(),
+      });
+
       router.replace("/recent");
     }, 900);
     return () => clearTimeout(t);
