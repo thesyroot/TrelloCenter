@@ -1,10 +1,12 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import HoldToTalk from "../../src/components/HoldToTalk";
 
 export default function CaptureScreen() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [notes, setNotes] = useState("");
 
   return (
     <View style={styles.container}>
@@ -17,17 +19,17 @@ export default function CaptureScreen() {
         style={styles.input}
       />
 
-      <View style={styles.box}>
-        <Text style={styles.boxTitle}>Audio</Text>
-        <Text style={styles.boxText}>
-          (Placeholder) Luego acá va el recorder.
-        </Text>
-      </View>
+      <HoldToTalk locale="es-AR" onText={setNotes} />
 
       <Pressable
         style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
-        onPress={() => router.push({ pathname: "/preview", params: { title } })}
-      >
+        onPress={() =>
+          router.push({
+            pathname: "/preview",
+            params: { title, text: notes },
+          })
+        }
+       >
         <Text style={styles.btnText}>Analyze</Text>
       </Pressable>
     </View>
