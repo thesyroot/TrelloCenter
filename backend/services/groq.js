@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 export async function callGroq(prompt) {
   const r = await fetch(
     "https://api.groq.com/openai/v1/chat/completions",
@@ -20,6 +18,11 @@ export async function callGroq(prompt) {
       })
     }
   );
+
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`Groq error ${r.status}: ${txt}`);
+  }
 
   const json = await r.json();
   return JSON.parse(json.choices[0].message.content);
