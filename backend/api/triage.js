@@ -6,6 +6,16 @@ import { buildPrompt } from "../utils/prompts.js";
 import { TRIAGE_HINTS } from "../config/triage-hints.js";
 
 export default async function handler(req, res) {
+  const animeTags = [
+    "ReadManga",
+    "ReadNovel",
+    "Finished",
+    "Cancelled",
+    "ViewPriority"
+  ];
+
+
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Only POST" });
   }
@@ -30,9 +40,10 @@ export default async function handler(req, res) {
   const boardsForModel = enrichedBoards.map(b => ({
     id: b.id,
     name: b.name,
-    lists: b.lists,              // [{id,name}]
-    labels: b.labels             // [{id,name}]
+    lists: b.lists,          // [{id,name}]
+    labels: b.tags.map(t => ({ name: t })) // normalizamos
   }));
+
 
 
   // 2️⃣ Prompt IA
