@@ -3,6 +3,8 @@ import { callGroq } from "../services/groq.js";
 import { getBoards, getLabels, getLists } from "../services/trello.js";
 import { buildPrompt } from "../utils/prompts.js";
 
+import { TRIAGE_HINTS } from "../config/triage-hints.js";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Only POST" });
@@ -25,15 +27,34 @@ export default async function handler(req, res) {
     }))
   );
 
+  const boardsForModel = enrichedBoards.map(b => ({
+    id: b.id,
+    name: b.name,
+    lists: b.lists,              // [{id,name}]
+    labels: b.labels             // [{id,name}]
+  }));
+
+
   // 2️⃣ Prompt IA
   const prompt = buildPrompt({
     transcript,
     suggestedTitle,
-    boards: enrichedBoards
+    boards: boardsForModel,
+    hints: TRIAGE_HINTS
   });
 
   // 3️⃣ IA
   const result = await callGroq(prompt);
+
+  if (result.boardName === "Anime") {
+    result.tags = result.tags.filter(tag =>
+      animeTags.includes(tag)
+    );
+  }
+
+  if (result.tags.length > 3) {
+    result.tags = result.tags.slice(0, 3);
+  }
 
   // 4️⃣ Validación
   const parsed = TriageSchema.parse(result);
