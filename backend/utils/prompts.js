@@ -21,6 +21,9 @@ REGLAS DURAS (NO ROMPER):
 6. El tablero Anime SOLO se usa para consumo de anime, manga o novelas.
 7. Las tareas universitarias tienen prioridad si se mencionan materias, TP, parciales o estudio.
 8. Si la intención no es clara, bajá el confidence (<0.6).
+9. REGLA EXCLUYENTE:
+  - Si el contenido NO menciona explícitamente anime, manga, novela, capítulo o temporada,
+    está PROHIBIDO elegir el tablero Anime.
 
 FORMATO DE SALIDA  
 Respondé SOLO JSON válido, sin texto extra:

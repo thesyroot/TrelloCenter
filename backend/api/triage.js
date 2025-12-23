@@ -67,6 +67,26 @@ export default async function handler(req, res) {
     result.tags = result.tags.slice(0, 3);
   }
 
+
+  // ⛔ VETO DURO: Anime solo si hay palabras clave explícitas
+  const ANIME_KEYWORDS = [
+    "anime", "manga", "novela", "capitulo", "episodio", "temporada"
+  ];
+
+  if (result.boardName === "Anime") {
+    const text = `${result.title} ${result.description}`.toLowerCase();
+    const hasAnimeKeyword = ANIME_KEYWORDS.some(k => text.includes(k));
+
+    if (!hasAnimeKeyword) {
+      // Forzamos baja confianza y limpiamos selección
+      result.confidence = Math.min(result.confidence ?? 0.8, 0.4);
+      result.boardId = "";
+      result.boardName = "";
+      result.listName = "";
+      result.tags = [];
+    }
+  }
+
   // 4️⃣ Validación
   const parsed = TriageSchema.parse(result);
 
