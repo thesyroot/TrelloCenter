@@ -10,7 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "node-fetch": "^3.3.2",
     "zod": "^4.2.1"
   }
 }
