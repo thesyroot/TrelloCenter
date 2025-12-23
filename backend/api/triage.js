@@ -1,7 +1,7 @@
-import { getBoards, getLists, getLabels } from "../services/trello.js";
-import { callGroq } from "../services/groq.js";
-import { buildPrompt } from "../utils/prompt.js";
 import { TriageSchema } from "../schemas/triage.schema.js";
+import { callGroq } from "../services/groq.js";
+import { getBoards, getLabels, getLists } from "../services/trello.js";
+import { buildPrompt } from "../utils/prompt.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
